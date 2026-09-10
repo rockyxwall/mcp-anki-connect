@@ -10,6 +10,7 @@
     "build": "tsc",
     "test": "tsc --noEmit",
     "describe-io": "node scripts/describe-io-cards.mjs",
+    "populate-audio": "node scripts/populate-word-audio.mjs",
     "prepublishOnly": "npm run build",
     "start": "node dist/index.js"
   },
