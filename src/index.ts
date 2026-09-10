@@ -64,10 +64,21 @@ import {
   getTagSummary,
   batchTagByDeck
 } from "./tools/analysis.js";
+import {
+  storeMediaFile,
+  retrieveMediaFile,
+  deleteMediaFile
+} from "./tools/media.js";
+import {
+  listImageOcclusionNotes,
+  getImageOcclusionNote,
+  updateImageOcclusionDescription,
+  batchUpdateImageOcclusionDescriptions
+} from "./tools/imageOcclusion.js";
 
 const server = new McpServer({
   name: 'mcp-anki-connect',
-  version: '0.0.1'
+  version: '0.0.2'
 });
 
 server.tool(
@@ -666,6 +677,104 @@ server.tool(
   },
   async ({ mappings }) => {
     const response = await batchTagByDeck(mappings);
+    return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  }
+)
+
+// Media management tools
+server.tool(
+  'retrieve_media_file',
+  {
+    filename: z.string().describe('Filename of the media file to retrieve from Anki media folder')
+  },
+  async ({ filename }) => {
+    const response = await retrieveMediaFile(filename);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+server.tool(
+  'store_media_file',
+  {
+    filename: z.string().describe('Filename of the media file to store in Anki media folder'),
+    data: z.string().describe('Base64-encoded file contents')
+  },
+  async ({ filename, data }) => {
+    const response = await storeMediaFile(filename, data);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+server.tool(
+  'delete_media_file',
+  {
+    filename: z.string().describe('Filename of the media file to delete from Anki media folder')
+  },
+  async ({ filename }) => {
+    const response = await deleteMediaFile(filename);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+// Image Occlusion tools
+server.tool(
+  'list_image_occlusion_notes',
+  {
+    deckName: z.string().optional().describe('Optional deck name to filter cards by'),
+    missingOnly: z.boolean().optional().describe('If true (default), only return notes without comments/description'),
+    limit: z.number().optional().describe('Maximum number of notes to return (default: 50)'),
+    offset: z.number().optional().describe('Offset for pagination (default: 0)')
+  },
+  async ({ deckName, missingOnly, limit, offset }) => {
+    const response = await listImageOcclusionNotes({
+      deckName,
+      missingOnly: missingOnly ?? true,
+      limit: limit ?? 50,
+      offset: offset ?? 0
+    });
+    return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  }
+)
+
+server.tool(
+  'get_image_occlusion_note',
+  {
+    noteId: z.number().describe('Anki note ID of the Image Occlusion note')
+  },
+  async ({ noteId }) => {
+    const response = await getImageOcclusionNote(noteId);
+    return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  }
+)
+
+server.tool(
+  'update_image_occlusion_description',
+  {
+    noteId: z.number().describe('Anki note ID of the Image Occlusion note to update'),
+    description: z.string().describe('Technical description/summary of image & occluded content (saved to Comments field)'),
+    header: z.string().optional().describe('Optional clean 3-5 word topic title (saved to Header field)'),
+    backExtra: z.string().optional().describe('Optional additional explanation/formulas (saved to Back Extra field)'),
+    tags: z.array(z.string()).optional().describe('Optional tags to add to the note')
+  },
+  async ({ noteId, description, header, backExtra, tags }) => {
+    const response = await updateImageOcclusionDescription({ noteId, description, header, backExtra, tags });
+    return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  }
+)
+
+server.tool(
+  'batch_update_io_descriptions',
+  {
+    updates: z.array(z.object({
+      noteId: z.number().describe('Anki note ID'),
+      description: z.string().describe('Technical description (saved to Comments field)'),
+      header: z.string().optional().describe('Optional topic title (saved to Header field)'),
+      backExtra: z.string().optional().describe('Optional explanation (saved to Back Extra field)'),
+      tags: z.array(z.string()).optional().describe('Optional tags')
+    })).describe('Array of Image Occlusion note updates')
+  },
+  async ({ updates }) => {
+    const response = await batchUpdateImageOcclusionDescriptions(updates);
     return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
   }
 )

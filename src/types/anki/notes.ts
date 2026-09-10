@@ -32,6 +32,8 @@ export interface NoteInfo {
         value: string;
         order: number;
     }>;
+    cards?: number[];
+    mod?: number;
 }
 
 /**

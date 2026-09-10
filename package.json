@@ -1,6 +1,6 @@
 {
   "name": "mcp-anki-connect",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Model Context Protocol (MCP) server for Anki Connect integration",
   "main": "dist/index.js",
   "bin": {
@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc",
     "test": "tsc --noEmit",
+    "describe-io": "node scripts/describe-io-cards.mjs",
     "prepublishOnly": "npm run build",
     "start": "node dist/index.js"
   },
