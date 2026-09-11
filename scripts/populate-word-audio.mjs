@@ -25,7 +25,7 @@ function getArg(flag, defaultValue = null) {
     return defaultValue;
 }
 
-const deckName = getArg('--deck', '[🗣️] Language::[🔠] English::1.[🔠] Word Mining');
+const deckName = getArg('--deck', '[🗣️] Language::[🔠] English');
 
 async function callAnki(action, params = {}) {
     const res = await fetch(ANKI_URL, {
