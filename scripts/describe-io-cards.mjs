@@ -67,8 +67,8 @@ async function callAnki(action, params = {}) {
 
 function extractImageFilename(html) {
     if (!html) return null;
-    const match = html.match(/src=["']?([^"'>\s]+)["']?/i);
-    return match ? match[1] : null;
+    const match = html.match(/src=["']([^"']+)["']/i) || html.match(/src=([^>\s]+)/i);
+    return match ? (match[1] || match[2]) : null;
 }
 
 function getMimeType(filename) {
@@ -119,6 +119,15 @@ Output strictly valid JSON matching this structure:
         ],
         generationConfig: {
             responseMimeType: 'application/json',
+            responseSchema: {
+                type: 'OBJECT',
+                properties: {
+                    header: { type: 'STRING' },
+                    comments: { type: 'STRING' },
+                    tags: { type: 'ARRAY', items: { type: 'STRING' } }
+                },
+                required: ['header', 'comments', 'tags']
+            },
             temperature: 0.2
         }
     };
@@ -150,12 +159,19 @@ Output strictly valid JSON matching this structure:
                 throw new Error('No text returned from Gemini API');
             }
 
+            let parsed;
             try {
-                return JSON.parse(candidate);
+                parsed = JSON.parse(candidate);
             } catch {
                 const cleaned = candidate.replace(/```json\s*|```/g, '').trim();
-                return JSON.parse(cleaned);
+                try {
+                    parsed = JSON.parse(cleaned);
+                } catch {
+                    const fixed = cleaned.replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+                    parsed = JSON.parse(fixed);
+                }
             }
+            return Array.isArray(parsed) ? parsed[0] : parsed;
         } catch (err) {
             if (attempt === retries) throw err;
             await sleep(2000 * attempt);
