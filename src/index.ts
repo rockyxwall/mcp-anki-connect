@@ -31,13 +31,19 @@ import {
   saveDeckConfig,
   setDeckConfigId,
   cloneDeckConfigId,
-  removeDeckConfigId
+  removeDeckConfigId,
+  deckPresetsSummary
 } from "./tools/decks.js";
 import {
   modelNames,
   modelNamesAndIds,
   modelFieldNames,
-  modelFieldsOnTemplates
+  modelFieldsOnTemplates,
+  modelTemplates,
+  modelTemplateRename,
+  updateModelTemplates,
+  modelStyling,
+  removeEmptyModels
 } from "./tools/models.js";
 import {
   addNote,
@@ -396,6 +402,14 @@ server.tool(
   }
 )
 
+server.tool(
+  'deck_presets_summary',
+  async () => {
+    const response = await deckPresetsSummary();
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
 // Model management tools
 server.tool(
   'model_names',
@@ -431,6 +445,66 @@ server.tool(
   },
   async ({ modelName }) => {
     const response = await modelFieldsOnTemplates(modelName);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+server.tool(
+  'model_templates',
+  {
+    modelName: z.string().describe('Name of the model to get card templates for')
+  },
+  async ({ modelName }) => {
+    const response = await modelTemplates(modelName);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+server.tool(
+  'model_template_rename',
+  {
+    modelName: z.string().describe('Name of the model'),
+    oldTemplateName: z.string().describe('Current name of the card template'),
+    newTemplateName: z.string().describe('New name for the card template')
+  },
+  async ({ modelName, oldTemplateName, newTemplateName }) => {
+    const response = await modelTemplateRename(modelName, oldTemplateName, newTemplateName);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+server.tool(
+  'update_model_templates',
+  {
+    model: z.object({
+      name: z.string().describe('Name of the model'),
+      templates: z.record(z.object({
+        Front: z.string().optional().describe('Front HTML of the template'),
+        Back: z.string().optional().describe('Back HTML of the template')
+      })).describe('Map of template names to template definitions')
+    }).describe('Model definition with updated templates')
+  },
+  async ({ model }) => {
+    const response = await updateModelTemplates(model);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+server.tool(
+  'model_styling',
+  {
+    modelName: z.string().describe('Name of the model to get CSS styling for')
+  },
+  async ({ modelName }) => {
+    const response = await modelStyling(modelName);
+    return { content: [{ type: 'text', text: JSON.stringify(response) }] };
+  }
+)
+
+server.tool(
+  'remove_empty_models',
+  async () => {
+    const response = await removeEmptyModels();
     return { content: [{ type: 'text', text: JSON.stringify(response) }] };
   }
 )

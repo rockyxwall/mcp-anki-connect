@@ -173,3 +173,60 @@ export async function removeDeckConfigId(configId: number): Promise<RemoveDeckCo
 
     return await callAnkiConnect<boolean>(request);
 }
+
+export interface DeckPresetSummaryItem {
+    configId: number;
+    configName: string;
+    decks: string[];
+    newPerDay?: number;
+    revPerDay?: number;
+    desiredRetention?: number;
+    reviewOrder?: number;
+    fsrsEnabled: boolean;
+    fsrsWeightsCount?: number;
+}
+
+/**
+ * Inspect all unique deck configuration presets across the collection in a single call
+ */
+export async function deckPresetsSummary(): Promise<AnkiConnectResponse<DeckPresetSummaryItem[]>> {
+    const namesRes = await deckNames();
+    if (!namesRes.result) {
+        return { result: null as any, error: namesRes.error };
+    }
+
+    const presetMap = new Map<number, DeckPresetSummaryItem>();
+
+    for (const d of namesRes.result) {
+        try {
+            const cfg = await getDeckConfig(d);
+            if (cfg && cfg.result) {
+                const c = cfg.result;
+                const cid = Number(c.id);
+                if (!presetMap.has(cid)) {
+                    const weightsCount = c.fsrsWeights ? c.fsrsWeights.length : (c.fsrsParams6 ? c.fsrsParams6.length : 0);
+                    presetMap.set(cid, {
+                        configId: cid,
+                        configName: c.name,
+                        decks: [d],
+                        newPerDay: c.new?.perDay,
+                        revPerDay: c.rev?.perDay,
+                        desiredRetention: c.desiredRetention,
+                        reviewOrder: c.reviewOrder,
+                        fsrsEnabled: weightsCount > 0,
+                        fsrsWeightsCount: weightsCount > 0 ? weightsCount : undefined
+                    });
+                } else {
+                    presetMap.get(cid)!.decks.push(d);
+                }
+            }
+        } catch {
+            // Skip decks with inaccessible config
+        }
+    }
+
+    return {
+        result: Array.from(presetMap.values()),
+        error: null
+    };
+}

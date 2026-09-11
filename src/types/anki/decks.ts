@@ -59,6 +59,14 @@ export interface DeckConfig {
     timer: number;
     replayq: boolean;
     usn: number;
+    fsrsWeights?: number[];
+    fsrsParams5?: number[];
+    fsrsParams6?: number[];
+    desiredRetention?: number;
+    reviewOrder?: number;
+    newSortOrder?: number;
+    newGatherPriority?: number;
+    [key: string]: any;
 }
 
 /**

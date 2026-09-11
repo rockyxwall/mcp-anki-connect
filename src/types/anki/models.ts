@@ -27,3 +27,22 @@ export interface ModelFieldNamesResponse extends AnkiConnectResponse<string[]> {
 export interface ModelFieldsOnTemplatesResponse extends AnkiConnectResponse<Record<string, string[][]>> {
     result: Record<string, string[][]>;
 }
+
+export interface ModelCardTemplate {
+    Front: string;
+    Back: string;
+}
+
+/**
+ * Response for getting model templates (card types)
+ */
+export interface ModelTemplatesResponse extends AnkiConnectResponse<Record<string, ModelCardTemplate>> {
+    result: Record<string, ModelCardTemplate>;
+}
+
+/**
+ * Response for getting model styling (CSS)
+ */
+export interface ModelStylingResponse extends AnkiConnectResponse<{ css: string }> {
+    result: { css: string };
+}

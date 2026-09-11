@@ -81,12 +81,28 @@ Add to your Claude configuration (`%APPDATA%\Claude\claude_desktop_config.json` 
 * `notes_info` – Retrieve detailed note fields and tags.
 * `add_tags` / `remove_tags` – Manage note tags.
 
-### Deck Operations
+### Deck Operations & Presets
 * `deck_names` – List all decks in collection.
 * `deck_names_and_ids` – List deck names with internal IDs.
 * `change_deck` – Move cards to another deck.
 * `delete_decks` – Delete specified decks.
-* `get_deck_config` / `save_deck_config` – Manage deck review configurations.
+* `deck_presets_summary` – Inspect all unique deck configuration presets across the collection with daily limits, retention targets, review orders, and FSRS stats in a single call.
+* `get_deck_config` – Retrieve the full configuration group object for a specific deck.
+* `save_deck_config` – Save and update deck configuration settings and presets.
+* `set_deck_config_id` – Assign decks to a configuration preset ID.
+* `clone_deck_config_id` – Clone an existing configuration preset with a new name.
+* `remove_deck_config_id` – Delete an unused configuration preset by ID.
+
+### Note Types & Card Templates (Card Types)
+* `model_names` – List all note type/model names in the collection.
+* `model_names_and_ids` – Map model names to their unique internal IDs.
+* `model_field_names` – Retrieve field names for a specific note type.
+* `model_fields_on_templates` – Inspect field mappings on template question and answer sides.
+* `model_templates` – Retrieve all card templates (Card Types) with front/back HTML for a model.
+* `model_template_rename` – Rename a card template (card type) within a model.
+* `update_model_templates` – Bulk update front/back HTML templates on an existing model.
+* `model_styling` – Get CSS styling rules for a note model.
+* `remove_empty_models` – Safely purge unused note types/models that have 0 notes.
 
 ### Card Operations
 * `find_cards` – Search cards with query syntax.
